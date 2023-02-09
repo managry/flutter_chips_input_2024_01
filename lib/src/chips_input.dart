@@ -114,6 +114,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       widget.maxChips != null && _chips.length >= widget.maxChips!;
 
   FocusNode? _focusNode;
+
   FocusNode get _effectiveFocusNode =>
       widget.focusNode ?? (_focusNode ??= FocusNode());
   late FocusAttachment _nodeAttachment;
@@ -288,7 +289,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     Future.delayed(const Duration(milliseconds: 300), () {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final renderBox = context.findRenderObject() as RenderBox;
-        await Scrollable.of(context)?.position.ensureVisible(renderBox);
+        await Scrollable.maybeOf(context)?.position.ensureVisible(renderBox);
       });
     });
   }
@@ -352,7 +353,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
             composing: TextRange.empty,
           ));
     }
-    _closeInputConnectionIfNeeded(); //Hack for #34 (https://github.com/danvick/flutter_chips_input/issues/34#issuecomment-684505282). TODO: Find permanent fix
+    //_closeInputConnectionIfNeeded(); //Hack for #34 (https://github.com/danvick/flutter_chips_input/issues/34#issuecomment-684505282). TODO: Find permanent fix
     _textInputConnection ??= TextInput.attach(this, textInputConfiguration);
     _textInputConnection?.setEditingState(_value);
   }
@@ -435,7 +436,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
                 maxLines: 1,
                 overflow: widget.textOverflow,
                 style: widget.textStyle ??
-                    theme.textTheme.subtitle1!.copyWith(height: 1.5),
+                    theme.textTheme.titleMedium!.copyWith(height: 1.5),
               ),
             ),
             Flexible(
@@ -492,4 +493,11 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
   @override
   void removeTextPlaceholder() {}
+
+  @override
+  void didChangeInputControl(
+      TextInputControl? oldControl, TextInputControl? newControl) {}
+
+  @override
+  void performSelector(String selectorName) {}
 }
