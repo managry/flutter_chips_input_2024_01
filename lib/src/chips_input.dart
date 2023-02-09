@@ -248,16 +248,25 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   }
 
   void selectSuggestion(T data) {
+    selectSuggestions([data]);
+  }
+
+  void selectSuggestions(List<T> items) {
     if (!_hasReachedMaxChips) {
-      setState(() => _chips = _chips..add(data));
-      if (widget.allowChipEditing) {
-        final enteredText = _value.normalCharactersText;
-        if (enteredText.isNotEmpty) _enteredTexts[data] = enteredText;
+      for (final data in items) {
+        setState(() => _chips = _chips..add(data));
+        if (widget.allowChipEditing) {
+          final enteredText = _value.normalCharactersText;
+          if (enteredText.isNotEmpty) _enteredTexts[data] = enteredText;
+        }
+        if (_hasReachedMaxChips)  {
+          _suggestionsBoxController.close();
+          break;
+        }
       }
       _updateTextInputState(replaceText: true);
       setState(() => _suggestions = null);
       _suggestionsStreamController.add(_suggestions);
-      if (_hasReachedMaxChips) _suggestionsBoxController.close();
       widget.onChanged(_chips.toList(growable: false));
     } else {
       _suggestionsBoxController.close();
@@ -265,9 +274,15 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   }
 
   void deleteChip(T data) {
+    deleteChips([data]);
+  }
+
+  void deleteChips(List<T> items) {
     if (widget.enabled) {
-      setState(() => _chips.remove(data));
-      if (_enteredTexts.containsKey(data)) _enteredTexts.remove(data);
+      setState(() => _chips.removeAll(items));
+      for (final data in items) {
+        if (_enteredTexts.containsKey(data)) _enteredTexts.remove(data);
+      }
       _updateTextInputState();
       widget.onChanged(_chips.toList(growable: false));
     }
