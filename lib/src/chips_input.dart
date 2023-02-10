@@ -283,7 +283,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       for (final data in items) {
         if (_enteredTexts.containsKey(data)) _enteredTexts.remove(data);
       }
-      _updateTextInputState();
+      _updateTextInputState(force: true);
       widget.onChanged(_chips.toList(growable: false));
     }
   }
@@ -357,8 +357,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     }
   }
 
-  void _updateTextInputState({replaceText = false, putText = ''}) {
-    if (replaceText || putText != '') {
+  void _updateTextInputState({replaceText = false, putText = '', force = false}) {
+    if (replaceText || putText != '' || force) {
       final updatedText =
           String.fromCharCodes(_chips.map((_) => kObjectReplacementChar)) +
               (replaceText ? '' : _value.normalCharactersText) +
