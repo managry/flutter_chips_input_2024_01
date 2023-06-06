@@ -37,6 +37,7 @@ class ChipsInput<T> extends StatefulWidget {
     required this.findSuggestions,
     required this.onChanged,
     this.maxChips,
+    this.minChips,
     this.textStyle,
     this.suggestionsBoxMaxHeight,
     this.inputType = TextInputType.text,
@@ -52,6 +53,8 @@ class ChipsInput<T> extends StatefulWidget {
     this.focusNode,
     this.initialSuggestions,
   })  : assert(maxChips == null || initialValue.length <= maxChips),
+        assert(minChips == null || initialValue.length >= minChips),
+        assert(minChips == null || maxChips == null || minChips <= maxChips),
         super(key: key);
 
   final InputDecoration decoration;
@@ -63,6 +66,7 @@ class ChipsInput<T> extends StatefulWidget {
   final ChipsBuilder<T> suggestionBuilder;
   final List<T> initialValue;
   final int? maxChips;
+  final int? minChips;
   final double? suggestionsBoxMaxHeight;
   final TextInputType inputType;
   final TextOverflow textOverflow;
@@ -113,6 +117,9 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   bool get _hasReachedMaxChips =>
       widget.maxChips != null && _chips.length >= widget.maxChips!;
 
+  bool get _hasReachedMinChips =>
+      widget.minChips != null && _chips.length <= widget.minChips!;
+
   FocusNode? _focusNode;
 
   FocusNode get _effectiveFocusNode =>
@@ -127,6 +134,10 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   void initState() {
     super.initState();
     _chips.addAll(widget.initialValue);
+    _value = TextEditingValue(
+      text: String.fromCharCodes(_chips.map((_) => kObjectReplacementChar)),
+      composing: TextRange.empty,
+    );
     _suggestions = widget.initialSuggestions
         ?.where((r) => !_chips.contains(r))
         .toList(growable: false);
@@ -259,7 +270,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
           final enteredText = _value.normalCharactersText;
           if (enteredText.isNotEmpty) _enteredTexts[data] = enteredText;
         }
-        if (_hasReachedMaxChips)  {
+        if (_hasReachedMaxChips) {
           _suggestionsBoxController.close();
           break;
         }
@@ -278,7 +289,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   }
 
   void deleteChips(List<T> items) {
-    if (widget.enabled) {
+    if (widget.enabled && !_hasReachedMinChips) {
       setState(() => _chips.removeAll(items));
       for (final data in items) {
         if (_enteredTexts.containsKey(data)) _enteredTexts.remove(data);
@@ -337,9 +348,13 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     // _receivedRemoteTextEditingValue = value;
     final oldTextEditingValue = _value;
     if (value.text != oldTextEditingValue.text) {
+      final chipRemoved = value.replacementCharactersCount <
+          oldTextEditingValue.replacementCharactersCount;
+      if (chipRemoved && _hasReachedMinChips) {
+        return;
+      }
       setState(() => _value = value);
-      if (value.replacementCharactersCount <
-          oldTextEditingValue.replacementCharactersCount) {
+      if (chipRemoved) {
         final removedChip = _chips.last;
         setState(() =>
             _chips = Set.of(_chips.take(value.replacementCharactersCount)));
