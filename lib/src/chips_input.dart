@@ -89,7 +89,7 @@ class ChipsInput<T> extends StatefulWidget {
 }
 
 class ChipsInputState<T> extends State<ChipsInput<T>>
-    implements TextInputClient {
+    with TextInputClient {
   Set<T> _chips = <T>{};
   List<T?>? _suggestions;
   final StreamController<List<T?>?> _suggestionsStreamController =
