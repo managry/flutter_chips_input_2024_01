@@ -445,6 +445,11 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
   @override
   AutofillScope? get currentAutofillScope => null;
 
+  void _updateEditingValueFromOut(TextEditingValue value) {
+    updateEditingValue(value);
+    _textInputConnection?.setEditingState(value);
+  }
+
   @override
   Widget build(BuildContext context) {
     _nodeAttachment.reparent();
@@ -480,38 +485,59 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       ),
     );
 
-    return NotificationListener<SizeChangedLayoutNotification>(
-      onNotification: (SizeChangedLayoutNotification val) {
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          _suggestionsBoxController.overlayEntry?.markNeedsBuild();
-        });
-        return true;
+    return RawKeyboardListener(
+      focusNode: _effectiveFocusNode,
+      onKey: (event) {
+        final str = currentTextEditingValue.text;
+
+        /// Make sure to filter event since without checking 'RawKeyDownEvent' will trigger this multiple times (2) because of RawKeyUpEvent
+        if (event.runtimeType.toString() == 'RawKeyDownEvent' &&
+            event.logicalKey == LogicalKeyboardKey.backspace &&
+            str.isNotEmpty) {
+          var text = String.fromCharCodes(str.runes, 0, str.runes.length - 1);
+
+          /// Make sure to also update cursor position using the TextSelection.collapsed.
+          _updateEditingValueFromOut(
+            _value.copyWith(
+              text: text,
+              selection: TextSelection.collapsed(offset: text.length),
+            ),
+          );
+        }
       },
-      child: SizeChangedLayoutNotifier(
-        child: Column(
-          children: <Widget>[
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                requestKeyboard();
-              },
-              child: InputDecorator(
-                decoration: widget.decoration,
-                isFocused: _effectiveFocusNode.hasFocus,
-                isEmpty: _value.text.isEmpty && _chips.isEmpty,
-                child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 4.0,
-                  runSpacing: 4.0,
-                  children: chipsChildren,
+      child: NotificationListener<SizeChangedLayoutNotification>(
+        onNotification: (SizeChangedLayoutNotification val) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            _suggestionsBoxController.overlayEntry?.markNeedsBuild();
+          });
+          return true;
+        },
+        child: SizeChangedLayoutNotifier(
+          child: Column(
+            children: <Widget>[
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  requestKeyboard();
+                },
+                child: InputDecorator(
+                  decoration: widget.decoration,
+                  isFocused: _effectiveFocusNode.hasFocus,
+                  isEmpty: _value.text.isEmpty && _chips.isEmpty,
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 4.0,
+                    runSpacing: 4.0,
+                    children: chipsChildren,
+                  ),
                 ),
               ),
-            ),
-            CompositedTransformTarget(
-              link: _layerLink,
-              child: Container(),
-            ),
-          ],
+              CompositedTransformTarget(
+                link: _layerLink,
+                child: Container(),
+              ),
+            ],
+          ),
         ),
       ),
     );
