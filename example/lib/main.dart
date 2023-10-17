@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_chips_input/flutter_chips_input.dart';
 
 void main() => runApp(const MyApp());
@@ -77,6 +78,12 @@ class MyHomePageState extends State<MyHomePage> {
                 // allowChipEditing: true,
                 keyboardAppearance: Brightness.dark,
                 textCapitalization: TextCapitalization.words,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(
+                    RegExp('--'),
+                    replacementString: '—',
+                  ),
+                ],
                 // enabled: false,
                 // maxChips: 5,
                 textStyle: const TextStyle(

@@ -32,6 +32,7 @@ class ChipsInput<T> extends StatefulWidget {
     this.initialValue = const [],
     this.decoration = const InputDecoration(),
     this.enabled = true,
+    this.inputFormatters,
     required this.chipBuilder,
     required this.suggestionBuilder,
     required this.findSuggestions,
@@ -60,6 +61,7 @@ class ChipsInput<T> extends StatefulWidget {
   final InputDecoration decoration;
   final TextStyle? textStyle;
   final bool enabled;
+  final List<TextInputFormatter>? inputFormatters;
   final ChipsInputSuggestions<T> findSuggestions;
   final ValueChanged<List<T>> onChanged;
   final ChipsBuilder<T> chipBuilder;
@@ -344,10 +346,17 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
 
   @override
   void updateEditingValue(TextEditingValue value) {
-    //print("updateEditingValue FIRED with ${value.text}");
     // _receivedRemoteTextEditingValue = value;
     final oldTextEditingValue = _value;
     if (value.text != oldTextEditingValue.text) {
+      value = widget.inputFormatters?.fold<TextEditingValue>(
+            value,
+            (newValue, formatter) => formatter.formatEditUpdate(
+              oldTextEditingValue,
+              newValue,
+            ),
+          ) ??
+          value;
       final chipRemoved = value.replacementCharactersCount <
           oldTextEditingValue.replacementCharactersCount;
       if (chipRemoved && _hasReachedMinChips) {
