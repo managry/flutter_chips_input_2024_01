@@ -138,6 +138,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     _chips.addAll(widget.initialValue);
     _value = TextEditingValue(
       text: String.fromCharCodes(_chips.map((_) => kObjectReplacementChar)),
+      selection: TextSelection.collapsed(offset: _chips.length),
       composing: TextRange.empty,
     );
     _suggestions = widget.initialSuggestions
