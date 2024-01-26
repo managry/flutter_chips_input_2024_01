@@ -90,8 +90,7 @@ class ChipsInput<T> extends StatefulWidget {
   ChipsInputState<T> createState() => ChipsInputState<T>();
 }
 
-class ChipsInputState<T> extends State<ChipsInput<T>>
-    with TextInputClient {
+class ChipsInputState<T> extends State<ChipsInput<T>> with TextInputClient {
   Set<T> _chips = <T>{};
   List<T?>? _suggestions;
   final StreamController<List<T?>?> _suggestionsStreamController =
@@ -281,7 +280,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
         }
       }
       _updateTextInputState(replaceText: true);
-      setState(() => _suggestions = null);
+      // The suggestion doesnt disappear when you confirm or delete a chip.
+      _onSearchChanged(_value.normalCharactersText);
       _suggestionsStreamController.add(_suggestions);
       widget.onChanged(_chips.toList(growable: false));
     } else {
@@ -300,6 +300,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
         if (_enteredTexts.containsKey(data)) _enteredTexts.remove(data);
       }
       _updateTextInputState(force: true);
+      // The suggestion doesnt disappear when you confirm or delete a chip
+      _onSearchChanged(_value.normalCharactersText);
       widget.onChanged(_chips.toList(growable: false));
     }
   }
@@ -384,7 +386,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
     }
   }
 
-  void _updateTextInputState({replaceText = false, putText = '', force = false}) {
+  void _updateTextInputState(
+      {replaceText = false, putText = '', force = false}) {
     if (replaceText || putText != '' || force) {
       final updatedText =
           String.fromCharCodes(_chips.map((_) => kObjectReplacementChar)) +
