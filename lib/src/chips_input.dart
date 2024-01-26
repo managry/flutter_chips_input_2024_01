@@ -173,6 +173,8 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       _openInputConnection();
       _suggestionsBoxController.open();
     } else {
+      // this deletes the unfinished contents of the field when you click away
+      _value = TextEditingValue.empty;
       _closeInputConnectionIfNeeded();
       _suggestionsBoxController.close();
     }
