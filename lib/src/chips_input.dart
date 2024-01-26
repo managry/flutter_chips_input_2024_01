@@ -500,6 +500,15 @@ class ChipsInputState<T> extends State<ChipsInput<T>>
       onKey: (event) {
         final str = currentTextEditingValue.text;
 
+        // This deletes the chip when you click away from the field and into the
+        // field again, and press backspace
+        if (event.runtimeType.toString() == 'RawKeyDownEvent' &&
+            event.logicalKey == LogicalKeyboardKey.backspace &&
+            str.isEmpty) {
+          deleteChip(_chips.last);
+          _onSearchChanged(_value.normalCharactersText);
+        }
+
         /// Make sure to filter event since without checking 'RawKeyDownEvent' will trigger this multiple times (2) because of RawKeyUpEvent
         if (event.runtimeType.toString() == 'RawKeyDownEvent' &&
             event.logicalKey == LogicalKeyboardKey.backspace &&
