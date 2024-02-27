@@ -400,7 +400,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>> with TextInputClient {
             composing: TextRange.empty,
           ));
     }
-    //_closeInputConnectionIfNeeded(); //Hack for #34 (https://github.com/danvick/flutter_chips_input/issues/34#issuecomment-684505282). TODO: Find permanent fix
+    //_closeInputConnectionIfNeeded(); //Hack for #34 (https://github.com/danvick/flutter_chips_input/issues/34#issuecomment-684505282).
     _textInputConnection ??= TextInput.attach(this, textInputConfiguration);
     _textInputConnection?.setEditingState(_value);
   }
@@ -431,9 +431,7 @@ class ChipsInputState<T> extends State<ChipsInput<T>> with TextInputClient {
   }
 
   @override
-  void performPrivateCommand(String action, Map<String, dynamic> data) {
-    //TODO
-  }
+  void performPrivateCommand(String action, Map<String, dynamic> data) {}
 
   @override
   void didUpdateWidget(covariant ChipsInput<T> oldWidget) {
@@ -500,9 +498,9 @@ class ChipsInputState<T> extends State<ChipsInput<T>> with TextInputClient {
       ),
     );
 
-    return RawKeyboardListener(
+    return KeyboardListener(
       focusNode: _effectiveFocusNode,
-      onKey: (event) {
+      onKeyEvent: (event) {
         final str = currentTextEditingValue.text;
 
         // This deletes the chip when you click away from the field and into the
